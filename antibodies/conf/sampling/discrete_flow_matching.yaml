@@ -1,0 +1,56 @@
+run_name: null                # run under logs/ whose checkpoints are sampled
+uncond_run_name: null         # separately trained unconditional run (label_dropout_prob=1.0), used for every
+                              # unconditional forward pass (posterior and gates); null = use the uncond token of run_name
+to_evaluate_checkpoints: [20] # final checkpoint of both released runs (200k steps)
+
+# Generic sampling
+num_steps: 100
+batch_size: 32                # sequences run through the model in one forward pass
+use_ancestral_sampling: false
+
+# Class-conditional CFG sweep (scripts/sample_sequences.py)
+n_per_class: 32               # sequences generated per (class, guid_scale, num_steps) combo
+n_per_class_num_batches: 1    # split n_per_class into this many sequential batches, each with its own
+                              # seed, concatenated into one samples.csv -- needed once n_per_class
+                              # exceeds what fits in one forward pass (e.g. 4096 -> 32 batches of 128)
+classes: null                 # list of target classes to sweep; null = natural-frequency mode, where the
+                              # labels are drawn from the reference pool's own class frequency instead
+guid_scales: [0.0, 1.0, 2.0, 3.0, 5.0]   # 0=unconditional, 1=plain conditional, >1=CFG-amplified
+num_steps_list: [50, 100, 200]           # inference-step ablation grid
+
+# Reference pool: real labelled sequences, used both to seed x_in and as the metrics' reference set
+label_reference_csv: "data/oas95_igblast_human/train.csv"   # (name, sequence, label) CSV
+max_ref_seqs: 20000           # load a uniform-random N-row subset instead of the full 54M-row file.
+                              # On by default because the V-gene classifier is an O(n_generated *
+                              # n_reference) scan run at every swept setting; null loads it in full.
+
+# NOT gate (scripts/sample_not_gate.py)
+not_method: "dynamic"         # "dynamic" (the NOT gate), or the "unconditional" / "static" baselines.
+                              # Must exist here, not just as a CLI override: Hydra composes in struct
+                              # mode, so overriding an absent key aborts before any sampling happens.
+not_class: 0                  # forbidden class
+not_n_samples: 64             # sequences generated per sweep setting
+not_sample_batch_size: 256    # not_n_samples is split into chunks of this size and concatenated, so it
+                              # can exceed what fits in GPU memory at once
+not_guid_scale_max: 5.0       # caps the dynamic guid_scale = p_c/(1-p_c) by clamping p_c (see sample_NOT)
+not_temps: [0.1, 0.5, 1.0]    # posterior temperature tau
+not_initial_guid_scales: [0.1, 0.5, 1.0, 1.5]   # crossed with not_temps
+not_offsets: [0.0]            # per-step shift of the posterior update (see sample_NOT); 0 = the plain form
+not_tag: ""                   # optional suffix isolating a sweep's outputs, in both
+                              # logs/Figures/{run}/not_gate{_tag}/ and logs/Results/{run}/{tag}/ (pass
+                              # --tag to the metrics scripts to match). Use one whenever not_n_samples
+                              # changes: the results CSVs dedup on hyperparameters and not on sample
+                              # count, so mixing sample counts in one tree gives incomparable rows.
+not_use_prior_weighted_init: false   # read not_initial_guid_scales as the scale a class would get under a
+                              # BALANCED prior, so majority families (IGHV3) start higher and rare ones
+                              # (IGHV7) lower instead of sharing one flat value (see sample_NOT).
+                              # Marked by a '_priorinit' folder suffix.
+
+# NOT-gate baselines (not_method=unconditional / static)
+not_static_classes: null      # not_class values to sweep for "static"; null = every class
+not_static_guid_scales: [0.5, 1.0, 1.5, 2.0, 3.0, 4.0]   # magnitudes; guid_scale=-s is applied
+
+# Online class posterior diagnostic (scripts/posterior_classifier_agreement.py)
+# Reuses num_steps (trajectory length) and batch_size (chunking) above.
+posterior_num_samples: 256    # sequences generated for the diagnostic
+posterior_germline_v: "data/igblast_germline/human/human_IGHV_aa"   # igblastp germline V db

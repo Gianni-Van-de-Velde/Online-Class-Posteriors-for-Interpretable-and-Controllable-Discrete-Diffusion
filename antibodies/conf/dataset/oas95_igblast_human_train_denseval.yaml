@@ -1,0 +1,21 @@
+# Same training set as oas95_igblast_human_train, but validating against a 20k-row stratified
+# subsample instead of the full 1.1M-row validation split.
+#
+# Why: the trainer's evaluate() iterates the ENTIRE validation dataloader with no subsetting
+# or early break (see trainer.py's evaluate()). At validation batch 128 x 2 GPUs
+# the full split is ~4,331 forward passes per eval -- fine at eval_steps=10000 (~14% overhead,
+# which is what the original runs paid), but at eval_steps=100 it is ~14x the training compute
+# and turns a 10k-step run into ~9 hours. The subsample makes the same 100-eval run ~45 min.
+#
+# 20k rows is ~2,000 sequences per noise-level bin, far more than a per-bin mean loss needs,
+# and the sample is stratified on `label` so the rare V-gene families keep their true share
+# (IGHV7 0.0047 -> 0.0046, IGHV6 0.0061 -> 0.0060). Written by
+# data-pipeline/oas95_igblast_classify_parallel.py alongside train.csv/val.csv.
+train:
+  samples_before_next_set: null
+  paths: {oas95vgene: data/oas95_igblast_human/train.csv}
+
+
+validation:
+  samples_before_next_set: null
+  paths: {oas95vgene: data/oas95_igblast_human/val_20k.csv}

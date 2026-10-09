@@ -1,0 +1,26 @@
+run_name: null                # run under logs/ whose checkpoints are sampled
+uncond_run_name: null         # separately trained unconditional run (label_dropout_prob=1.0), used for every
+                              # unconditional forward pass (posterior and gates); null = use the null-class token of run_name
+to_evaluate_checkpoints: [200]
+
+# Generic sampling
+num_steps: 100
+guid_scale: 1
+gen_class: null               # posterior_classifier_agreement.py only: null = random classes, an integer fixes
+                              # the class (sample_images.py always draws random classes)
+num_samples: 4096             # posterior_classifier_agreement.py
+num_batches: 32
+batch_size: 16                # samples generated in parallel (all sampling scripts)
+use_ancestral_sampling: false
+use_ancestral_sampling_transition_likelihoods: false  # score posterior updates with the ancestral (CTMC) transition
+                                                      # likelihoods instead of the ODE ones, independently of the sampler
+normalize_by_unmask_count: false   # masking only: divide each posterior update by the number of pixels unmasked
+                                   # in that step (posterior_classifier_agreement.py)
+
+# NOT gate
+not_class: 0
+not_guid_scale_max: 5.0       # caps the dynamic guidance scale p_c/(1-p_c) (see sample_NOT)
+not_temps: [0.1, 0.5, 1.0]    # posterior temperature tau
+not_initial_guid_scales: [0.0, 1.5, 3.0]
+not_baseline: false           # true = sample_NOT_baseline (static negative CFG) instead of sample_NOT
+not_baseline_lams: [0.5, 1.0, 2.0, 3.0]

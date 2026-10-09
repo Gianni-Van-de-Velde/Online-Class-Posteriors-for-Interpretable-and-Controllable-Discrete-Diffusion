@@ -1,0 +1,25 @@
+# Versions used for the paper. Install torch for your CUDA version first, e.g.
+#   pip install torch==2.11.0 --index-url https://download.pytorch.org/whl/cu130
+torch==2.11.0
+xformers==0.0.35
+transformers==4.38.2
+accelerate==0.27.2
+hydra-core==1.3.2
+omegaconf==2.3.0
+safetensors==0.7.0
+wandb==0.25.1
+numpy==2.3.5
+scipy==1.17.1
+scikit-learn==1.9.0
+pandas==3.0.3
+matplotlib==3.10.9
+tqdm==4.67.3
+pyyaml==6.0.3          # not imported directly; pinned because omegaconf parses the configs with it
+
+# Naturalness metric: an antibody-specific autoregressive LM, used as the "how antibody-like
+# is this sequence" score. Only scripts/metrics_*.py import it.
+iglm==0.1.0
+
+# NOT pip-installable, and needed for every V-gene-family label in this repo (both the
+# training labels and the evaluation of generated sequences): NCBI IgBLAST, which provides
+# `igblastp` and `makeblastdb`. See the README's "IgBLAST setup".

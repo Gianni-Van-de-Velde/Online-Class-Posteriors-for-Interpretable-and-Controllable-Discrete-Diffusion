@@ -1,0 +1,4 @@
+# Hugging Face DatasetDict written by scripts/prepare_data.py: its "train" split is used for training,
+# its "test" split for the validation loss
+name: mnist        # also selects the pretrained classifier and class names in the scripts
+path: data/mnist

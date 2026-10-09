@@ -1,0 +1,30 @@
+# The Defaults List is a list in an input config that instructs Hydra how to build the output config.
+defaults:
+  - _self_
+  - dataset: oas95_igblast_human_train
+  - tokenizer: amplify_tokenizer
+  - model:
+    - amplify
+    - 35M
+    - 35M_vgene
+  - optimizer: adamw
+  - scheduler: cosine_decay
+  - trainer:
+    - base
+    - ddlm
+  - sampling: discrete_flow_matching
+    
+seed: 0
+
+hydra:
+  run:
+    dir: outputs/${now:%Y-%m-%d-%H-%M-%S}/hydra
+
+wandb:
+  name: null
+  project: antibody-class-posteriors   # Project name
+  entity: null                         # W&B username/team (null = your default)
+  tags: []
+  dir: outputs/${now:%Y-%m-%d-%H-%M-%S}/wandb
+  mode: offline
+  log_interval: 100

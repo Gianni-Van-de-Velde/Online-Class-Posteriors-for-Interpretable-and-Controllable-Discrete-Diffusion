@@ -1,0 +1,35 @@
+# Default composition; experiments override dataset/model/trainer on the command line (see run/).
+defaults:
+  - _self_
+  - dataset: mnist
+  - model:
+    - dit_mnist
+    - dit_xs
+  - optimizer: adamw
+  - scheduler: cosine_decay
+  - trainer:
+    - base
+    - dfm
+  - sampling: discrete_flow_matching
+
+seed: 0
+
+# Discrete noise process, shared by training and sampling
+noise:
+  type: uniform             # uniform | masking (masking adds a MASK token to the vocabulary)
+  scheduler_type: linear    # linear | cosine | sin | polynomial | inv_polynomial: kappa(t) used to noise the data
+                            # during training, and the time grid during sampling (see noise_scheduler.py)
+  polynomial_power: null    # exponent p, required only for (inv_)polynomial
+
+hydra:
+  run:
+    dir: outputs/${now:%Y-%m-%d-%H-%M-%S}/hydra
+
+wandb:
+  name: null
+  project: discrete-gates
+  entity: null                # your W&B entity; or set WANDB_MODE=offline
+  tags: []
+  dir: outputs/${now:%Y-%m-%d-%H-%M-%S}/wandb
+  mode: ${oc.env:WANDB_MODE,offline}   # export WANDB_MODE=online to log to W&B
+  log_interval: 100

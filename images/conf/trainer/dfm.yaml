@@ -1,0 +1,9 @@
+# Discrete flow matching objective (the noise process itself is configured under `noise` in config.yaml)
+per_device_batch_size: 16
+t_min_train: 0.0              # training times t are drawn from [t_min_train, t_max_train]
+t_max_train: 1.0
+label_dropout_prob: 0.15      # CFG: probability of replacing the label by the unconditional token
+use_loss_weighting: False     # weight the loss by kappa_dot / (1 - kappa) (MD4 ELBO weight)
+max_weight_loss: 10.0         # caps that weight as kappa -> 1
+label_smoothing: 0
+num_bins: 10                  # validation loss is also logged per bin of t

@@ -1,0 +1,7 @@
+hidden_size: 480
+num_hidden_layers: 12
+num_attention_heads: 20
+intermediate_size: 1920
+frequency_embedding_size: 256
+max_period: 10
+use_adaln: true

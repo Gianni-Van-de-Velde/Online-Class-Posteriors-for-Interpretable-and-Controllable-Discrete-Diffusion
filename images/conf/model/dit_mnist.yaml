@@ -1,0 +1,3 @@
+input_size: 28
+in_channels: 1
+vocab_size: 256

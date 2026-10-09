@@ -1,0 +1,4 @@
+depth: 6
+hidden_size: 256
+num_heads: 4
+frequency_embedding_size: 128
